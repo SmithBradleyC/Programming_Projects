@@ -1,0 +1,24 @@
+{
+    "id": "19CA9D01",
+    "path": "C:/Users/brads/Desktop/Projects/Music_Classification/R/download_data.R",
+    "project_path": "R/download_data.R",
+    "type": "r_source",
+    "hash": "1447948341",
+    "contents": "",
+    "dirty": false,
+    "created": 1616087801441.0,
+    "source_on_save": false,
+    "relative_order": 2,
+    "properties": {
+        "cursorPosition": "9,18",
+        "scrollLine": "6"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1616095195,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1616095195512,
+    "read_only": false,
+    "read_only_alternatives": []
+}

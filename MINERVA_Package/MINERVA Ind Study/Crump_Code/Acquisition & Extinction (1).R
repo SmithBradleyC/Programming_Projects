@@ -1,0 +1,146 @@
+#################################################
+# MINERVA_AL: Retrospective revaluation
+#################################################
+
+#################################################
+# Returns string w/o lead or trailing whitespace
+#################################################
+trim <- function (x) gsub("^\\s+|\\s+$", "", x)
+
+#################################################
+# Get a vector representation for a specified
+# cue or compound plus context (e.g., AB -> ABX)
+#################################################
+Convert_cue <- function (Cue) {
+  x <- Cue
+  for (i in 1:nchar(Cue)) {
+    for (j in 1:length(letters)) {
+      if (substring(Cue, i, i) == LETTERS[j]) substring(x, i, i) <- LETTERS[j]
+      if (substring(Cue, i, i) == "+") substring(x, i, i) <- "Z"
+      if (substring(Cue, i, i) == "-") substring(x, i, i) <- " "      
+    }
+  } 
+  return(trim(x)) 
+}
+
+#################################################
+# Get a vector representation for a specified
+# cue or compound plus context (e.g., AB -> ABX)
+#################################################
+Get_item <- function (Cue, n, Include_context) {
+  if (Include_context == TRUE) Cue <- Convert_cue(paste0(Cue,"X"))
+                               else Cue <- Convert_cue(Cue,"X")
+  x <- t(matrix(0, n*length(letters)))
+  for (i in 1:nchar(Cue)) {
+    for (j in 1:length(letters)) {
+      if (substring(Cue, i, i) == LETTERS[j]) x[((j-1)*n+1):((j-1)*n+n)] <- +1
+    }
+  }
+  return(x)
+}
+
+#################################################
+# Vector cosine (with correction for div zero)
+#################################################
+Vector_cosine <- function (x, y) {
+  v <- crossprod(x,y) / (sqrt(crossprod(x,x)) * sqrt(crossprod(y,y)))
+  if (sum(abs(x)) == 0) v <- 0
+  if (sum(abs(y)) == 0) v <- 0  
+  return(v)
+}
+
+#################################################
+# Retrieve an echo, C, given P -> M
+#################################################
+Retrieve_echo <- function (P, M, N) {
+  C <- matrix(runif(ncol(M), -0.001, +0.001), 1, ncol(M))
+  for (i in 1:nrow(M)) {
+    S <- Vector_cosine(P[1,1:500], M[i,1:500])
+    A <- S**3
+    C <- C + A * M[i,]
+  }
+  C <- C/max(abs(C))
+  return(C)
+}
+
+#################################################
+# Get response strength
+#################################################
+Get_response <- function (x) {
+  Response <- sum(x[501:520])/length(x[501:520])
+  return(Response)
+}
+
+#################################################
+# Encode trace to memory
+#################################################
+Encode <- function(E, C, L) {
+  t <- matrix(0, 1, ncol(E))
+  for (i in 1:ncol(E)) {
+    if (runif(1, 0, 1) < L) t[i] <- E[i] - C[i]
+  }
+  return(t)
+}
+
+#################################################
+# Run a training phase for N_trials
+#################################################
+Train <- function (Stimulus, Memory, N_features, Learning_rate, N_trials) {
+  for (i in 1:N_trials) {
+    Memory <- rbind(Memory, Encode(Get_item(Stimulus, N_features, Context), 
+                                   Retrieve_echo(Get_item(Stimulus, N_features, Context), Memory, N_features), 
+                                   Learning_rate))
+  }
+  return(Memory)
+}
+
+#################################################
+# Get response strength for a given test cue
+#################################################
+Test_elements <- function (Memory, N_features) {
+  rs <- matrix(0, 1, length(LETTERS))
+  for (i in 1:length(LETTERS)) {
+    rs[i] <- Get_response(Retrieve_echo(Get_item(LETTERS[i], N_features, Context), 
+                                        Memory, N_features))
+    
+  }
+  return(rs)
+}
+
+#################################################
+# Simulation parameters
+#################################################
+N_features <- 20
+N_trials <- 50
+N_replications <- 100
+Learning_rate <- 1/3
+Context <- TRUE
+
+#################################################
+# Graphing matrix
+#################################################
+par(mfrow=c(1,1))
+
+#################################################
+# Acquisition, A+, followed by extinction, A-
+#################################################
+Results <- matrix(0, N_replications, N_trials*2)
+for (i in 1:N_replications) {
+  Memory <- matrix(0, 1, N_features*length(LETTERS))
+    for (j in 1:N_trials) {
+      Probe <-Get_item("A+", N_features, Context)
+      Memory <- rbind(Memory,
+                      Encode(Probe, Retrieve_echo(Probe, Memory, N_features), Learning_rate))
+      Results[i,j] <- Test_elements(Memory, N_features)[1]
+    }
+  for (j in 1:N_trials) {
+    Probe <-Get_item("A-", N_features, Context)
+    Memory <- rbind(Memory,
+                    Encode(Probe, Retrieve_echo(Probe, Memory, N_features), Learning_rate))
+    Results[i,j+N_trials] <- Test_elements(Memory, N_features)[1]
+  }
+}
+plot(colMeans(Results),
+     xlab="Trial",
+     ylab="Retrieval of X",
+     ylim=c(0,1))

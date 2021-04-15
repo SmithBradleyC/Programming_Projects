@@ -1,0 +1,24 @@
+{
+    "id": "9ED22BFF",
+    "path": "C:/Users/brads/Desktop/Projects/Music_Classification/R/get_artists.R",
+    "project_path": "R/get_artists.R",
+    "type": "r_source",
+    "hash": "2794434981",
+    "contents": "",
+    "dirty": false,
+    "created": 1616087790543.0,
+    "source_on_save": false,
+    "relative_order": 2,
+    "properties": {
+        "cursorPosition": "20,22",
+        "scrollLine": "5"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1616088275,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1616088275596,
+    "read_only": false,
+    "read_only_alternatives": []
+}

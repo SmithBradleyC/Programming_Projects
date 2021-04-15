@@ -1,0 +1,85 @@
+# Q1
+
+library(haven)
+init_data <- read_sav("C:/Users/brads/Downloads/data2.sav")
+data<-init_data[,1:6]
+
+#install.packages("lavaan")
+library(lavaan)
+library(psych)
+library(GPArotation)
+
+describe(data)
+
+KMO(data)
+bartlett.test(data) #wrong
+library(REdaS)
+bart_spher(data)
+
+alpha(data) # reliability
+
+plot(eigen(cor(data))$values, main = "Scree Plot", ylab = "Eigen Values")
+lines(eigen(cor(data))$values)
+
+library(nFactors)
+nS<-nScree(as.data.frame(data))
+nS
+plotnScree(nS)
+
+fit<-fa(r = data,
+        nfactors = 2,
+        rotate = "oblimin",
+        fm = "pa")
+fit$r
+fit$communality
+fit$scores
+cor(fit$scores[,1],init_data$FAC1_1) # same as dr. Li
+cor(fit$scores[,2],init_data$FAC2_1) # same as dr. Li
+
+
+fa.diagram(fit,digits = 3,cex = 1)
+
+
+
+# Q2
+
+# Read in the data and open libraries
+library(haven)
+library(lavaan)
+init_data <- read_sav("C:/Users/brads/Downloads/data2.sav")
+data<-init_data[,1:6]
+
+# Set up model and run the CFA
+goal.model <- ' Brad =~ q1 + q2 + q3
+                Brad2 =~ q4 + q5 + q6 '
+fit <- cfa(model = goal.model,
+           data = data,
+           std.lv=TRUE, 
+           estimator = "ML")
+summary(fit, standardized = TRUE, fit.measures=TRUE)
+
+# Compute the modification indicies
+modindices(fit)
+
+library(semPlot)
+semPaths(object = fit,what = "path",whatLabels = "est", layout = "tree2")
+
+# add in another connection
+# Set up model and run the CFA
+goal.model <- ' F1 =~ q1 + q2 + q3
+                F2 =~ q4 + q5 + q6 
+                q3 ~~ q6  '
+fit <- cfa(goal.model, data = data, std.lv=TRUE, estimator = "ML")
+summary(fit, standardized = TRUE, fit.measures=TRUE)
+
+# Compute the modification indicies
+modindices(fit)
+
+library(semPlot)
+semPaths(object = fit,what = "path",whatLabels = "est", layout = "tree")
+
+
+library(MVN)
+mvn(data, multivariatePlot = "contour")
+
+
