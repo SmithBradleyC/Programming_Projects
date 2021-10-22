@@ -13,3 +13,4 @@ pca<-prcomp(vec_representation, center = FALSE)
 summary(pca)
 
 
+print("")
